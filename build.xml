@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Build jar and run tests - with command: ant -->
+<!-- ******************************************* -->
+<!-- Start local server on port 8000 from /test-url to run all tests:
+	 python3 -m http.server PORT_NUMBER -->
+<!-- ******************************************* -->
+
+<project name="sthlm-new-apartments" default="build" basedir="./build">
+	
+	<property name="assets" value="assets" />
+	<property name="classes" value="classes" />
+	<property name="library" value="lib" />
+	<property name="package" value="sthlm.apartments" />
+	<property name="test-assets" value="test-url" />
+	
+	<!-- Dependencies -->
+	<!-- ************ -->
+	<path id="project.classpath">
+		<fileset dir="../${library}" />
+	</path>
+	
+	<!-- Test classes and dependencies -->
+	<!-- ***************************** -->
+	<path id="tests.classpath">
+		<path refid="project.classpath" />
+		<pathelement location="${classes}" />
+	</path>
+	
+	<!-- Delete previous build components -->
+	<!-- ******************************** -->
+	<target name="clean" description="Delete previous build components">
+		<delete dir="${classes}" />
+		<delete dir="${assets}" />
+		<delete dir="${test-assets}" />
+		<delete file="${ant.project.name}.jar" />
+	</target>
+	
+	<!-- Initialize directories and files -->
+	<!-- ******************************** -->
+	<target name="init" depends="clean" description="Initialize directories and files">
+		<mkdir dir="${classes}" />
+		<mkdir dir="${assets}" />
+		<copy todir="./${test-assets}">
+			<fileset dir="../${test-assets}" includes="**" />
+		</copy>
+		<copy file="../README.md" todir="." />
+	</target>
+	
+	<!-- Compile project -->
+	<!-- *************** -->
+	<target name="compile" depends="init" description="Compile project">
+		<javac destdir="${classes}" includeantruntime="false">
+			<src path="../src" />
+			<src path="../tests" />
+			<classpath refid="project.classpath" />
+		</javac>
+	</target>
+	
+	<!-- Create jar -->
+	<!-- ********** -->
+	<target name="makejar" depends="compile" description="Create jar">
+		<jar destfile="${ant.project.name}.jar" basedir="classes">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="${package}/NewApartmentProjectsApp" />
+			</manifest>
+			<!-- Exclude tests from jar -->
+			<exclude name="**/*Test*" />
+			<!-- Include libraries -->
+			<zipgroupfileset dir="../${library}" includes="jsoup*" />
+		</jar>
+	</target>
+	
+	<!-- Run tests -->
+	<!-- ********* -->
+	<target name="tests" depends="makejar" description="Run tests and write results to a file">
+		<junit printsummary="yes">
+			<classpath refid="tests.classpath" />
+			<formatter type="plain" />
+			<test name="${package}.AllTests" todir="." />
+		</junit>
+	</target>
+	
+	
+	<!-- Build starting point -->
+	<!-- ******************** -->
+	<target name="build" depends="tests"></target>
+	
+	
+	<!-- Run jar - when it's been created - with command: ant run -->
+	<!-- ******************************************************** -->
+	<target name="run" description="Run jar">
+		<java jar="${ant.project.name}.jar" fork="true" />
+	</target>
+
+</project>
