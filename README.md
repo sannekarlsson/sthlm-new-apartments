@@ -6,6 +6,8 @@ This program have been developed since that type of functionality is not availab
 
 ## Build project and run tests
 
+Make sure there is a build directory within the project directory.
+
 Start a local server on port 8000 in a terminal to prepare for the tests:
 
 <code>
